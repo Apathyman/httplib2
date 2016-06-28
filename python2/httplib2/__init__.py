@@ -161,7 +161,13 @@ class FailedToDecompressContent(HttpLib2ErrorWithResponse): pass
 class UnimplementedDigestAuthOptionError(HttpLib2ErrorWithResponse): pass
 class UnimplementedHmacDigestAuthOptionError(HttpLib2ErrorWithResponse): pass
 
-class MalformedHeader(HttpLib2Error): pass
+#MalformedHeader eats API error responses which are useful. This returns them to the user.
+class MalformedHeader(HttpLib2Error): 
+    def __init__(self, desc, headers,headername):
+        self.headers = headers
+        self.headername = headername
+        HttpLib2Error.__init__(self, desc)
+        
 class RelativeURIError(HttpLib2Error): pass
 class ServerNotFoundError(HttpLib2Error): pass
 class ProxiesUnavailableError(HttpLib2Error): pass
@@ -328,7 +334,7 @@ def _parse_www_authenticate(headers, headername='www-authenticate'):
                 authenticate = the_rest.strip()
 
         except ValueError:
-            raise MalformedHeader("WWW-Authenticate")
+            raise MalformedHeader("WWW-Authenticate",headers,headername)
     return retval
 
 
